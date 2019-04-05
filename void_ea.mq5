@@ -7,9 +7,14 @@
 #property link      "https://www.mql5.com"
 #property version   "1.00"
 
+input int      AtrPeriod=14;      // Atr Period
+input double      Vervort_fast_tema_period=12.0;   // Fast tema
+input double      Vervort_slow_tema_period=12.0;   // Fast tema
+
 double our_buffer[];
 double p_close;
 int verwort_handle;
+int atr_handle;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -21,6 +26,9 @@ int OnInit()
    
    verwort_handle = iCustom(NULL,0,"Examples\\Vervoort_Crossover_histo.ex5",12.0,5,12.0);
    Print("verwort_handle = ",verwort_handle,"  error = ",GetLastError());
+   
+   atr_handle = iATR(NULL,0,AtrPeriod);
+   Print("atr_handle = ",atr_handle,"  error = ",GetLastError());
 //---
    return(INIT_SUCCEEDED);
   }
@@ -130,6 +138,14 @@ void OnTick()
    
    if(!isColorChange){return;}
    
+   double iATRBuffer[];
+   ArraySetAsSeries(iATRBuffer, true);
+   if (CopyBuffer(atr_handle,0,0,20,iATRBuffer) < 0){Print("copy buffer error =",GetLastError());}
+   
+   double atrValue = NormalizeDouble(iATRBuffer[1] *100000,0);
+   double oneAndHalfAtr = 1.5*atrValue;
+   Print(atrValue);
+   
    bool Buy_Condition_1=(new_verw_value == 1);
 
 //--- Putting all together   
@@ -145,8 +161,8 @@ void OnTick()
       ZeroMemory(mrequest);
       mrequest.action = TRADE_ACTION_DEAL;                                  // immediate order execution
       mrequest.price = NormalizeDouble(latest_price.ask,_Digits);           // latest ask price
-      mrequest.sl = NormalizeDouble(latest_price.ask - 100*_Point,_Digits); // Stop Loss
-      mrequest.tp = NormalizeDouble(latest_price.ask + 30*_Point,_Digits); // Take Profit
+      mrequest.sl = NormalizeDouble(latest_price.ask - oneAndHalfAtr*_Point,_Digits); // Stop Loss
+      mrequest.tp = NormalizeDouble(latest_price.ask + atrValue*_Point,_Digits); // Take Profit
       mrequest.symbol = _Symbol;                                            // currency pair
       mrequest.volume = 0.01;                                                 // number of lots to trade
       mrequest.magic = 1337;                                             // Order Magic Number
@@ -184,8 +200,8 @@ void OnTick()
          ZeroMemory(mrequest);
          mrequest.action=TRADE_ACTION_DEAL;                                // immediate order execution
          mrequest.price = NormalizeDouble(latest_price.bid,_Digits);           // latest Bid price
-         mrequest.sl = NormalizeDouble(latest_price.bid + 100*_Point,_Digits); // Stop Loss
-         mrequest.tp = NormalizeDouble(latest_price.bid - 30*_Point,_Digits); // Take Profit
+         mrequest.sl = NormalizeDouble(latest_price.bid + oneAndHalfAtr*_Point,_Digits); // Stop Loss
+         mrequest.tp = NormalizeDouble(latest_price.bid - atrValue*_Point,_Digits); // Take Profit
          mrequest.symbol = _Symbol;                                          // currency pair
          mrequest.volume = 0.01;                                              // number of lots to trade
          mrequest.magic = 1337;                                          // Order Magic Number
