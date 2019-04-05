@@ -10,6 +10,7 @@
 input int      AtrPeriod=14;      // Atr Period
 input double      Vervort_fast_tema_period=12.0;   // Fast tema
 input double      Vervort_slow_tema_period=12.0;   // Fast tema
+input double risk=2; // Risk per trade
 
 double our_buffer[];
 double p_close;
@@ -107,6 +108,7 @@ void OnTick()
 
    if(PositionSelect(_Symbol)==true) // we have an opened position
      {
+     return;
       if(PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY)
         {
          Buy_opened=true;  //It is a Buy
@@ -144,7 +146,8 @@ void OnTick()
    
    double atrValue = NormalizeDouble(iATRBuffer[1] *100000,0);
    double oneAndHalfAtr = 1.5*atrValue;
-   Print(atrValue);
+   double money_to_risk = AccountInfoDouble(ACCOUNT_BALANCE) * (risk/100);
+   double lotSize = NormalizeDouble(money_to_risk/(1.5*(atrValue/10)),2);
    
    bool Buy_Condition_1=(new_verw_value == 1);
 
@@ -164,7 +167,7 @@ void OnTick()
       mrequest.sl = NormalizeDouble(latest_price.ask - oneAndHalfAtr*_Point,_Digits); // Stop Loss
       mrequest.tp = NormalizeDouble(latest_price.ask + atrValue*_Point,_Digits); // Take Profit
       mrequest.symbol = _Symbol;                                            // currency pair
-      mrequest.volume = 0.01;                                                 // number of lots to trade
+      mrequest.volume = lotSize;                                                 // number of lots to trade
       mrequest.magic = 1337;                                             // Order Magic Number
       mrequest.type = ORDER_TYPE_BUY;                                        // Buy Order
       mrequest.type_filling = ORDER_FILLING_IOC;                             // Order execution type
@@ -203,7 +206,7 @@ void OnTick()
          mrequest.sl = NormalizeDouble(latest_price.bid + oneAndHalfAtr*_Point,_Digits); // Stop Loss
          mrequest.tp = NormalizeDouble(latest_price.bid - atrValue*_Point,_Digits); // Take Profit
          mrequest.symbol = _Symbol;                                          // currency pair
-         mrequest.volume = 0.01;                                              // number of lots to trade
+         mrequest.volume = lotSize;                                              // number of lots to trade
          mrequest.magic = 1337;                                          // Order Magic Number
          mrequest.type= ORDER_TYPE_SELL;                                     // Sell Order
          mrequest.type_filling = ORDER_FILLING_IOC;                          // Order execution type
