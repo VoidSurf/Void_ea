@@ -8,8 +8,8 @@
 #property version   "1.00"
 
 input int      AtrPeriod=14;      // Atr Period
-input double      Vervort_fast_tema_period=12.0;   // Fast tema
-input double      Vervort_slow_tema_period=12.0;   // Fast tema
+input double      Vervort_fast_tema_period=12.0;   // Fast TEMA period
+input double      Vervort_slow_tema_period=12.0;   // Slow TEMA period
 input double risk=2; // Risk per trade
 
 double our_buffer[];
